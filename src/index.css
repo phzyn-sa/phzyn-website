@@ -1,0 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Tajawal", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  
+  --color-lime-50: #ecfbfd;
+  --color-lime-100: #d3f4f9;
+  --color-lime-200: #ade7f2;
+  --color-lime-300: #74d1e5;
+  --color-lime-400: #10798e;
+  --color-lime-500: #0d6273;
+  --color-lime-600: #0a4c5a;
+  --color-lime-700: #073843;
+  --color-lime-800: #05262e;
+  --color-lime-900: #03171d;
+  --color-lime-950: #010a0c;
+}
+
+/* Base custom designs */
+html {
+  scroll-behavior: smooth;
+  background-color: #0a0c0e;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0c0e;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1f2327;
+  border-radius: 9999px;
+  border: 2px solid #0a0c0e;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2b3036;
+}
+
+/* Custom RTL-specific visual alignments and transitions */
+[dir="rtl"] {
+  text-align: right;
+}
+
+/* LTR-specific directions overrides */
+.ltr {
+  direction: ltr;
+  text-align: left;
+}
+
+/* Clean printing style for client estimators and receipts */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area, #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    color: black !important;
+    background: white !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+}

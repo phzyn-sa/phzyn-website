@@ -1,0 +1,6 @@
+{
+  "name": "PHZYN Contracting - فزين للمقاولات المعمارية",
+  "description": "الموقع الرسمي لشركة فزين للمقاولات المعمارية - متخصصون في تنفيذ المحلات التجارية، المكاتب، والبوثات مع تصميم وبناء تجارب مميزة.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
