@@ -492,14 +492,6 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
               {t.sectionWorksSub}
             </p>
           </div>
-
-          <button
-            onClick={() => { setActivePage('projects'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
-            className="flex items-center gap-2 text-xs font-bold text-[#10798e] hover:text-[#0c5c6d] transition-all border-b border-[#10798e] hover:border-[#0c5c6d] pb-1 uppercase tracking-widest"
-          >
-            <span>{t.btnAllProjects}</span>
-            {language === 'ar' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-          </button>
         </div>
 
         {/* 6 Projects Gallery (Glass cards) */}
@@ -567,6 +559,24 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Prominent centered button to view all projects */}
+        <div className="flex justify-center mt-12 pb-4">
+          <button
+            onClick={() => {
+              setActivePage('projects');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="group relative flex items-center justify-center gap-3 px-10 py-4 rounded-full text-sm font-bold text-white bg-[#10798e] hover:bg-[#0c5c6d] shadow-md hover:shadow-xl hover:shadow-[#10798e]/20 transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 cursor-pointer"
+          >
+            <span>{t.btnAllProjects}</span>
+            {language === 'ar' ? (
+              <ArrowLeft className="h-4 w-4 transition-transform duration-300 group-hover:-translate-x-1" />
+            ) : (
+              <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+            )}
+          </button>
         </div>
       </section>
 

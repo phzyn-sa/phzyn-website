@@ -135,7 +135,7 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
                     value={formData.fullName}
                     onChange={e => setFormData(keys => ({ ...keys, fullName: e.target.value }))}
                     className="py-3 px-4 rounded-xl text-sm bg-slate-50 border border-zinc-200 text-zinc-900 placeholder-zinc-450 focus:outline-none focus:border-[#10798e] focus:ring-1 focus:ring-[#10798e]/20 transition-all font-sans"
-                    placeholder={language === 'ar' ? 'مثال: خالد محمد الفوزان' : 'e.g., Jean-Luc Picard'}
+                    placeholder={language === 'ar' ? 'مثال: سعد بن خالد' : 'e.g., Jean-Luc Picard'}
                   />
                 </div>
 
@@ -180,7 +180,7 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
 
               <h2 className="text-xl font-bold flex items-center gap-2 border-b border-zinc-150 pb-4 text-zinc-900 mt-4 font-sans">
                 <Building2 className="h-5 w-5 text-[#10798e]" />
-                <span>{language === 'ar' ? '٢. ركائز ومواصفات المشروع المعماري' : '2. Contract Specifications'}</span>
+                <span>{language === 'ar' ? '٢. بيانات المشروع' : '2. Contract Specifications'}</span>
               </h2>
 
               <div className="flex flex-col gap-6">
@@ -214,7 +214,7 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between text-xs text-zinc-550">
                     <span className="font-semibold">{t.quoteFormArea}</span>
-                    <span className="font-bold text-[#10798e] font-mono text-sm bg-[#10798e]/10 px-2.5 py-1 rounded-full border border-[#10798e]/20">
+                    <span className="font-bold text-[#10798e] font-sans text-sm bg-[#10798e]/10 px-3.5 py-1 rounded-full border border-[#10798e]/20 whitespace-nowrap">
                       {formData.areaSize} {language === 'ar' ? 'متر مربع' : 'Sqm'}
                     </span>
                   </div>
