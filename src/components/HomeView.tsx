@@ -9,7 +9,6 @@ import { Store, Briefcase, Layers, ArrowLeft, ArrowRight, MapPin, Maximize2, Cal
 import { Page, Language, Project } from '../types';
 import { ServicesData, ProjectsData, MethodologySteps, Translations } from '../data';
 import { saudiRegions } from './SaudiRegionsData';
-import { ProjectVideoEmbed } from './ProjectVideoEmbed';
 import imgCommercial from '../assets/images/regenerated_image_1779550936996.png';
 import imgOffice from '../assets/images/regenerated_image_1779550938782.png';
 import imgBooth from '../assets/images/regenerated_image_1779550940143.png';
@@ -503,12 +502,16 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
               <div className="relative aspect-[4/3] overflow-hidden bg-black">
                 {/* Autoplay muted video directly without fake image placeholder */}
                 {proj.youtubeId ? (
-                  <ProjectVideoEmbed
-                    youtubeId={proj.youtubeId}
-                    mainImage={proj.mainImage}
-                    title={language === 'ar' ? proj.titleAr : proj.titleEn}
-                    scale={2.38}
-                  />
+                  <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-black">
+                    <iframe
+                      src={`https://www.youtube.com/embed/${proj.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${proj.youtubeId}&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1`}
+                      className="w-full h-full object-cover opacity-90 transition-opacity"
+                      style={{ transform: 'scale(2.38)', transformOrigin: 'center' }}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      frameBorder="0"
+                      title={proj.titleAr}
+                    />
+                  </div>
                 ) : (
                   <img
                     src={proj.mainImage}
