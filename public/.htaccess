@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # 1. Route POST /api/send-quote to the PHP SMTP Mailer endpoint
+  RewriteRule ^api/send-quote$ api/send-quote/index.php [L,QSA]
+  RewriteRule ^api/send-quote/$ api/send-quote/index.php [L,QSA]
+
+  # 2. Redirect/Fallback for SPA inside Vite React (Allows page refreshes on subroutes)
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
