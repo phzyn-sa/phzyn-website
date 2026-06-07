@@ -104,7 +104,20 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
         }),
       });
 
-      const resData = await response.json();
+      const contentType = response.headers.get('content-type');
+      let resData: any = {};
+      
+      if (contentType && contentType.includes('application/json')) {
+        resData = await response.json();
+      } else {
+        const rawText = await response.text();
+        console.warn('Received HTML response:', rawText.substring(0, 150));
+        throw new Error(
+          language === 'ar'
+            ? 'خطأ في الاتصال بالمخدم أو لم يتم تهيئة إعدادات البريد (SMTP) في البيئة بعد.'
+            : 'Mailing service server environment configurations (SMTP) are not initialized yet.'
+        );
+      }
 
       if (!response.ok) {
         throw new Error(resData.error || (language === 'ar' ? 'عذراً، حدث خطأ أثناء إرسال البريد الإلكتروني للطلب.' : 'Failed to send request.'));
@@ -118,6 +131,50 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
     } finally {
       setIsSending(false);
     }
+  };
+
+  const getWhatsAppMessage = () => {
+    const serviceLabel = 
+      formData.serviceType === 'commercial' ? (language === 'ar' ? 'تنفيذ محلات تجارية' : 'Retail Retail Store') :
+      formData.serviceType === 'office' ? (language === 'ar' ? 'تنفيذ مكاتب ومجمعات' : 'Office Fit-out') :
+      formData.serviceType === 'booth' ? (language === 'ar' ? 'تنفيذ بوثات ومعارض' : 'Exhibition Booth') : formData.serviceType;
+
+    const budgetLabel = 
+      formData.budget === 'under50k' ? t.budgetUnder50k :
+      formData.budget === '50k-150k' ? t.budget50k150k :
+      formData.budget === '150k-500k' ? t.budget150k500k :
+      formData.budget === 'over500k' ? t.budgetOver500k : formData.budget;
+
+    const timelineLabel = 
+      formData.timeline === 'urgent' ? (language === 'ar' ? 'عاجل' : 'Urgent') :
+      formData.timeline === 'normal' ? (language === 'ar' ? 'طبيعي - من شهر إلى ٣ أشهر' : 'Normal') :
+      formData.timeline === 'flexible' ? (language === 'ar' ? 'مرن - أكثر من ٣ أشهر' : 'Flexible') : formData.timeline;
+
+    const tempCode = 'PHZ-' + Math.floor(100000 + Math.random() * 900050);
+
+    return `السلام عليكم ورحمة الله وبركاته،
+أود تقديم طلب مشروع جديد:
+📌 *رقم التذكرة:* ${ticketNumber || tempCode}
+👤 *اسم العميل:* ${formData.fullName}
+🏢 *اسم الجهة/العلامة التجارية:* ${formData.companyName || 'لا يوجد'}
+✉️ *البريد الإلكتروني:* ${formData.email}
+📞 *رقم الجوال:* ${formData.phone}
+🛠️ *نوع الخدمة:* ${serviceLabel}
+📍 *المدينة:* ${formData.city || 'غير محدد'}
+🏘️ *الحي:* ${formData.neighborhood || 'غير محدد'}
+📐 *المساحة:* ${formData.areaSize} متر مربع
+💰 *الميزانية التقريبية:* ${budgetLabel}
+⏳ *الجدول الزمني للهندسة:* ${timelineLabel}
+📝 *تفاصيل إضافية:*
+${formData.details || 'لا يوجد'}
+
+تم إرسال هذا الطلب المسبق عبر منصة فزين للمقاولات المعمارية.`;
+  };
+
+  const handleWhatsAppSubmitFallback = () => {
+    const message = getWhatsAppMessage();
+    const url = `https://wa.me/966538488654?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   const handlePrint = () => {
@@ -344,9 +401,42 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
 
               {/* Error Message Display */}
               {submitError && (
-                <div className="p-4 rounded-xl rgb bg-red-50 text-red-650 border border-red-200/60 text-xs sm:text-sm font-sans flex flex-col gap-1">
-                  <span className="font-bold text-red-700">{language === 'ar' ? 'فشل إرسال الطلب:' : 'Request failed:'}</span>
-                  <span className="opacity-90">{submitError}</span>
+                <div className="flex flex-col gap-3 font-sans">
+                  <div className="p-4 rounded-xl bg-red-50 text-red-650 border border-red-200/60 text-xs sm:text-sm flex flex-col gap-1">
+                    <span className="font-bold text-red-700">{language === 'ar' ? 'فشل إرسال الطلب تلقائياً:' : 'Automated submission failed:'}</span>
+                    <span className="opacity-90">{submitError}</span>
+                  </div>
+                  
+                  {/* WhatsApp Fallback Box */}
+                  <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs sm:text-sm flex flex-col gap-3 text-right">
+                    <div className="flex items-center gap-2 text-emerald-800 font-bold justify-start">
+                      <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                      </span>
+                      {language === 'ar' ? 'بديل فوري وسريع عبر الواتساب' : 'Instant WhatsApp Backup Submission'}
+                    </div>
+                    <p className="text-zinc-600 text-xs font-light leading-relaxed">
+                      {language === 'ar' 
+                        ? 'نظراً لعدم توفر مخدم بريد مباشر للعملية تلقائياً، يمكنك إرسال كامل تفاصيل النموذج التي أدخلتها بلمسة واحدة إلى مهندسينا عِبر الواتساب لبدء دراسة تذكرة الطلب والمخطط الهندسي:'
+                        : 'Since the mailer config is unavailable, you can instantly submit the exact project details you filled to our engineers through WhatsApp in one click:'
+                      }
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleWhatsAppSubmitFallback}
+                      className="w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-full text-xs font-bold bg-emerald-500 hover:bg-emerald-600 text-white shadow-md active:scale-[0.98] transition-all cursor-pointer font-sans"
+                    >
+                      <svg
+                        viewBox="0 0 24 24"
+                        className="w-4 h-4 fill-current"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M12.004 2C6.48 2 2 6.48 2 12.004c0 1.83.493 3.619 1.427 5.195L2 22l4.945-1.296a9.92 9.92 0 0 0 5.059 1.365h.005c5.524 0 10.004-4.48 10.004-10.005C22.013 6.48 17.528 2 12.004 2zm5.727 14.18c-.247.697-1.204 1.272-1.66 1.332-.455.06-1.02.13-2.994-.654-2.523-1.002-4.11-3.576-4.237-3.743-.127-.168-.93-1.237-.93-2.361 0-1.124.587-1.68.796-1.9.21-.22.456-.276.608-.276.152 0 .304.002.437.009.14.007.33-.053.518.397.194.464.664 1.62.72 1.73.056.11.093.24.019.39-.074.15-.11.24-.22.37-.11.13-.23.29-.33.39-.11.11-.226.23-.097.45.128.22.57.94 1.22 1.52.837.747 1.543.98 1.761 1.09.218.11.347.09.476-.06.13-.15.55-.64.7-.86.15-.22.3-.185.507-.11.206.075 1.31.618 1.53.73.22.11.367.168.42.26.055.093.055.534-.192 1.231z" />
+                      </svg>
+                      <span>{language === 'ar' ? 'إرسال تفاصيل المشروع الكاملة عبر الواتساب' : 'Send Full Project Details to WhatsApp'}</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
