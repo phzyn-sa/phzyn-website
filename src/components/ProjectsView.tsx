@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, MapPin, Maximize2, Calendar, User, Check, X, ArrowLeft, ArrowRight, CornerDownLeft, Play, Layers } from 'lucide-react';
 import { Page, Language, Project } from '../types';
 import { ProjectsData, Translations } from '../data';
+import { ProjectVideoEmbed } from './ProjectVideoEmbed';
 
 interface ProjectsViewProps {
   language: Language;
@@ -158,15 +159,12 @@ export function ProjectsView({
             <div className="relative aspect-[4/3] overflow-hidden bg-black">
               {/* Autoplay muted video directly without fake image placeholder */}
               {proj.youtubeId ? (
-                <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-black">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${proj.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${proj.youtubeId}&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1`}
-                    className="w-full h-full scale-[1.35] object-cover opacity-90"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    frameBorder="0"
-                    title={proj.titleAr}
-                  />
-                </div>
+                <ProjectVideoEmbed
+                  youtubeId={proj.youtubeId}
+                  mainImage={proj.mainImage}
+                  title={language === 'ar' ? proj.titleAr : proj.titleEn}
+                  scale={2.38}
+                />
               ) : (
                 <img
                   src={proj.mainImage}
@@ -180,7 +178,7 @@ export function ProjectsView({
 
               <div className="absolute bottom-4 right-4 bg-[#10798e] text-white text-[10px] font-black px-3 py-1.5 rounded-lg border border-white/10 shadow-md z-30">
                 {proj.category === 'commercial' && (language === 'ar' ? 'محلات تجارية' : 'Retail')}
-                {proj.category === 'office' && (language === 'ar' ? 'مكاتب ومؤسسات' : 'Corporate')}
+                {proj.category === 'office' && (language === 'ar' ? 'مكاتب ومقرات عمل' : 'Corporate')}
                 {proj.category === 'booth' && (language === 'ar' ? 'بوثات ومعارض' : 'Exhibition')}
               </div>
             </div>
@@ -242,11 +240,12 @@ export function ProjectsView({
               <div className="grid grid-cols-1 md:grid-cols-2">
                 
                 {/* Visual Thumbnail */}
-                <div className="relative h-96 md:h-full min-h-[400px] md:min-h-[500px] bg-black flex items-center justify-center overflow-hidden">
+                <div className="relative h-96 md:h-full min-h-[400px] md:min-h-[500px] bg-zinc-950 flex items-center justify-center overflow-hidden p-4">
                   {selectedProject.youtubeId ? (
                     <iframe
-                      src={`https://www.youtube.com/embed/${selectedProject.youtubeId}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1&playlist=${selectedProject.youtubeId}&loop=1`}
-                      className="w-full h-full absolute inset-0 z-10"
+                      src={`https://www.youtube-nocookie.com/embed/${selectedProject.youtubeId}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1&playlist=${selectedProject.youtubeId}&loop=1`}
+                      className="h-full max-w-full rounded-2xl shadow-2xl z-10"
+                      style={{ aspectRatio: '9/16' }}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                       frameBorder="0"
@@ -272,7 +271,7 @@ export function ProjectsView({
                     <div className="flex flex-wrap items-center gap-1.5">
                       <span className="px-2.5 py-1 text-[10px] font-extrabold tracking-wider rounded-lg bg-[#10798e]/10 text-[#10798e] border border-[#10798e]/20 uppercase">
                         {selectedProject.category === 'commercial' && (language === 'ar' ? 'محلات تجارية' : 'Retail')}
-                        {selectedProject.category === 'office' && (language === 'ar' ? 'مكاتب ومؤسسات' : 'Corporate')}
+                        {selectedProject.category === 'office' && (language === 'ar' ? 'مكاتب ومقرات عمل' : 'Corporate')}
                         {selectedProject.category === 'booth' && (language === 'ar' ? 'بوثات ومعارض' : 'Exhibition')}
                       </span>
                     </div>
@@ -316,7 +315,7 @@ export function ProjectsView({
                           </span>
                           <span className="text-xs font-semibold text-zinc-800">
                             {selectedProject.category === 'commercial' && (language === 'ar' ? 'محلات تجارية' : 'Retail')}
-                            {selectedProject.category === 'office' && (language === 'ar' ? 'مكاتب ومؤسسات' : 'Corporate')}
+                            {selectedProject.category === 'office' && (language === 'ar' ? 'مكاتب ومقرات عمل' : 'Corporate')}
                             {selectedProject.category === 'booth' && (language === 'ar' ? 'بوثات ومعارض' : 'Exhibition')}
                           </span>
                         </div>

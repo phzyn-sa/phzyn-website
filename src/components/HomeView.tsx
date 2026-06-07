@@ -8,8 +8,8 @@ import { motion } from 'motion/react';
 import { Store, Briefcase, Layers, ArrowLeft, ArrowRight, MapPin, Maximize2, Calendar, Check, ExternalLink, Activity, Info, Play } from 'lucide-react';
 import { Page, Language, Project } from '../types';
 import { ServicesData, ProjectsData, MethodologySteps, Translations } from '../data';
-import { SawdustCanvas } from './SawdustCanvas';
 import { saudiRegions } from './SaudiRegionsData';
+import { ProjectVideoEmbed } from './ProjectVideoEmbed';
 import imgCommercial from '../assets/images/regenerated_image_1779550936996.png';
 import imgOffice from '../assets/images/regenerated_image_1779550938782.png';
 import imgBooth from '../assets/images/regenerated_image_1779550940143.png';
@@ -243,9 +243,6 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
       {/* 1. CINEMATIC HERO SECTION */}
       <section className="relative min-h-[92vh] flex items-center justify-center overflow-hidden pt-16 sm:pt-28 pb-16 px-0 sm:px-8 max-w-7xl mx-auto w-full border-b border-zinc-200/50">
         
-        {/* Animated Dust canvas particles */}
-        <SawdustCanvas emitterRef={emitterRef} />
-
         {/* Backdrop patterns & grids */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#10798e04_1px,transparent_1px),linear-gradient(to_bottom,#10798e04_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-60 select-none pointer-events-none" />
         <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[350px] h-[350px] rounded-full bg-[#10798e]/5 blur-[120px] select-none pointer-events-none" />
@@ -506,15 +503,12 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
               <div className="relative aspect-[4/3] overflow-hidden bg-black">
                 {/* Autoplay muted video directly without fake image placeholder */}
                 {proj.youtubeId ? (
-                  <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-black">
-                    <iframe
-                      src={`https://www.youtube.com/embed/${proj.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${proj.youtubeId}&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1`}
-                      className="w-full h-full scale-[1.35] object-cover opacity-90"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      frameBorder="0"
-                      title={proj.titleAr}
-                    />
-                  </div>
+                  <ProjectVideoEmbed
+                    youtubeId={proj.youtubeId}
+                    mainImage={proj.mainImage}
+                    title={language === 'ar' ? proj.titleAr : proj.titleEn}
+                    scale={2.38}
+                  />
                 ) : (
                   <img
                     src={proj.mainImage}
