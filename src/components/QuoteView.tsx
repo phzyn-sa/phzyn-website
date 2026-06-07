@@ -46,6 +46,8 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
   const [ticketNumber, setTicketNumber] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [smtpSuccess, setSmtpSuccess] = useState<boolean | null>(null);
+  const [smtpError, setSmtpError] = useState<string | null>(null);
 
   // Determine dynamic min/max area sizes based on serviceType
   let minArea = 40;
@@ -88,14 +90,16 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
 
     setIsSending(true);
     setSubmitError(null);
+    setSmtpSuccess(null);
+    setSmtpError(null);
 
     // Generate ticket receipt
     const code = 'PHZ-' + Math.floor(100000 + Math.random() * 900050);
     setTicketNumber(code);
 
     try {
-      // Background attempt to register on server/SMTP if configured
-      await fetch('/api/send-quote', {
+      // Build fetch request to SMTP server API endpoint
+      const response = await fetch('/api/send-quote', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -105,8 +109,18 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
           ticketNumber: code,
         }),
       });
+
+      const resData = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setSmtpSuccess(false);
+        setSmtpError(resData.error || resData.details || 'SMTP Error');
+      } else {
+        setSmtpSuccess(true);
+      }
     } catch (err: any) {
-      console.warn('Background SMTP send did not complete (SMTP or API not configured yet). This is handled gracefully:', err);
+      console.warn('Background SMTP send did not complete:', err);
+      setSmtpSuccess(false);
+      setSmtpError(err.message || 'Network error');
     } finally {
       setIsSending(false);
       setIsSubmitted(true); // Always proceed to the beautiful success screen!
@@ -485,6 +499,45 @@ ${formData.details || 'لا يوجد'}
                   {language === 'ar' ? 'قيد المراجعة الفنية والدراسة الهندسية المخصصة' : 'Under Custom Engineering Review'}
                 </span>
               </div>
+
+              {/* Real-time SMTP email sending feedback & diagnostics */}
+              {smtpSuccess === true && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-800 rounded-xl text-xs flex items-center justify-start gap-2 font-sans text-right">
+                  <span className="relative flex h-2 w-2">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span>
+                    {language === 'ar' 
+                      ? 'تم إرسال نسخة بريدية تلقائياً لـ phzyn@phzyn.sa بنجاح!' 
+                      : 'Automated notification email dispatched successfully to phzyn@phzyn.sa!'
+                    }
+                  </span>
+                </div>
+              )}
+
+              {smtpSuccess === false && (
+                <div className="p-3.5 bg-amber-500/5 border border-amber-500/20 rounded-xl text-right flex flex-col gap-1.5 font-sans">
+                  <div className="flex items-center gap-1.5 text-amber-800 text-xs font-bold justify-start">
+                    <span className="relative flex h-1.5 w-1.5">
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75"></span>
+                      <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-amber-500"></span>
+                    </span>
+                    {language === 'ar' ? 'ملاحظة فنية (بيئة مخدم الإيميلات):' : 'Technical System Notice (SMTP):'}
+                  </div>
+                  <p className="text-zinc-650 text-[11px] leading-relaxed font-light text-right">
+                    {language === 'ar' 
+                      ? `تعذر إرسال الإيميل التلقائي لـ phzyn@phzyn.sa. (السبب: ${smtpError || 'إعدادات غير مكتملة'}).`
+                      : `Automated copy to phzyn@phzyn.sa failed. (Details: ${smtpError || 'missing configurations'}).`
+                    }
+                  </p>
+                  <p className="text-[10px] text-zinc-500 leading-normal text-right">
+                    {language === 'ar'
+                      ? '💡 حل سريع: لتفعيل الإيميلات تلقائياً، يرجى ملء بيانات بيئة الإيميل في لوحة تحكم AI Studio (Settings > Secrets) بالمتغيرات التالية: SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_PORT وثم النقر على (Restart Dev Server) كخطوة إجبارية لإعادة قراءة المتغيرات.'
+                      : '💡 Fix: Go to AI Studio > Settings > Secrets, add SMTP_HOST, SMTP_USER, SMTP_PASS, SMTP_PORT and click (Restart Dev Server) in the tool tray to apply newly configured secrets.'
+                    }
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Direct WhatsApp Submission Confirmation Section */}

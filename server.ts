@@ -38,17 +38,25 @@ async function startServer() {
         });
       }
 
-      // Check for SMTP configuration
-      const smtpHost = process.env.SMTP_HOST;
-      const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT) : 465;
-      const smtpUser = process.env.SMTP_USER;
-      const smtpPass = process.env.SMTP_PASS;
-      const smtpSenderName = process.env.SMTP_SENDER_NAME || 'PHZYN Project Requests';
+      // Check for SMTP configuration (trimming to handle any accidental leading or trailing spaces from AI Studio Secrets copy-paste)
+      const smtpHost = process.env.SMTP_HOST?.trim();
+      const smtpPortStr = process.env.SMTP_PORT?.trim();
+      const smtpPort = smtpPortStr ? parseInt(smtpPortStr) : 465;
+      const smtpUser = process.env.SMTP_USER?.trim();
+      const smtpPass = process.env.SMTP_PASS?.trim();
+      const smtpSenderName = (process.env.SMTP_SENDER_NAME || 'PHZYN Project Requests').trim();
+
+      console.log(`[SMTP Connection Attempt] Host: "${smtpHost}", Port: ${smtpPort}, User: "${smtpUser}", Secure: ${smtpPort === 465}`);
 
       if (!smtpHost || !smtpUser || !smtpPass) {
-        console.error('SMTP secrets are missing or incomplete in environment.');
+        const missing = [];
+        if (!smtpHost) missing.push('SMTP_HOST');
+        if (!smtpUser) missing.push('SMTP_USER');
+        if (!smtpPass) missing.push('SMTP_PASS');
+        console.error(`SMTP variables missing: ${missing.join(', ')}`);
         return res.status(500).json({
           error: 'SMTP configuration is incomplete in the environment variables.',
+          details: `Missing environment secrets: ${missing.join(', ')}`,
         });
       }
 
@@ -248,8 +256,9 @@ async function startServer() {
         </html>
       `;
 
-      // Set up standard SMTP NodeMailer transporter
+      // Set up standard SMTP NodeMailer transporter with robust TLS/SSL settings
       // Secure option runs true if port is 465, false otherwise.
+      // We set rejectUnauthorized: false to allow self-signed or domain-mismatch SSL certificates (extremely common on cPanel/custom mail-servers).
       const transporter = nodemailer.createTransport({
         host: smtpHost,
         port: smtpPort,
@@ -258,6 +267,11 @@ async function startServer() {
           user: smtpUser,
           pass: smtpPass,
         },
+        tls: {
+          rejectUnauthorized: false,
+          servername: smtpHost, // Explicitly pass SNI server name for secure connections
+        },
+        connectionTimeout: 15000, // 15 seconds timeout
       });
 
       // Mail options definition
