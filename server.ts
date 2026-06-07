@@ -27,6 +27,8 @@ async function startServer() {
         timeline,
         details,
         ticketNumber,
+        city,
+        neighborhood,
       } = req.body;
 
       // Basic validation
@@ -207,6 +209,14 @@ async function startServer() {
                 <div class="row">
                   <div class="label">نوع الخدمة المطلوبة:</div>
                   <div class="value">${getServiceLabel(serviceType)}</div>
+                </div>
+                <div class="row">
+                  <div class="label">المدينة:</div>
+                  <div class="value">${city || '—'}</div>
+                </div>
+                <div class="row">
+                  <div class="label">الحي:</div>
+                  <div class="value">${neighborhood || '—'}</div>
                 </div>
                 <div class="row">
                   <div class="label">مساحة الموقع التقريبية:</div>

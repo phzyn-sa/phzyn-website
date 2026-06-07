@@ -48,4 +48,6 @@ export interface QuoteRequest {
   budget: string;
   details: string;
   timeline: string;
+  city?: string;
+  neighborhood?: string;
 }

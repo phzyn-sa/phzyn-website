@@ -28,7 +28,9 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
     areaSize: 150,
     budget: '150k-500k',
     timeline: 'normal',
-    details: ''
+    details: '',
+    city: '',
+    neighborhood: ''
   });
 
   // Apply preselected service from projects page
@@ -240,6 +242,37 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
                   </div>
                 </div>
 
+                {/* City and Neighborhood Fields */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs text-zinc-500 font-semibold">
+                      {language === 'ar' ? 'المدينة *' : 'City *'}
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      value={formData.city}
+                      onChange={e => setFormData(keys => ({ ...keys, city: e.target.value }))}
+                      className="py-3 px-4 rounded-xl text-sm bg-slate-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#10798e] focus:ring-1 focus:ring-[#10798e]/20 transition-all font-sans text-right"
+                      placeholder={language === 'ar' ? 'البحث أو الكتابة... مثلاً الرياض' : 'e.g., Riyadh'}
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs text-zinc-500 font-semibold">
+                      {language === 'ar' ? 'الحي *' : 'Neighborhood *'}
+                    </label>
+                    <input
+                      required
+                      type="text"
+                      value={formData.neighborhood}
+                      onChange={e => setFormData(keys => ({ ...keys, neighborhood: e.target.value }))}
+                      className="py-3 px-4 rounded-xl text-sm bg-slate-50 border border-zinc-200 text-zinc-900 placeholder-zinc-400 focus:outline-none focus:border-[#10798e] focus:ring-1 focus:ring-[#10798e]/20 transition-all font-sans text-right"
+                      placeholder={language === 'ar' ? 'مثال: حي حطين' : 'e.g., Al Malqa'}
+                    />
+                  </div>
+                </div>
+
                 {/* Size Area in meters */}
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center justify-between text-xs text-zinc-550">
@@ -388,6 +421,18 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
                     {formData.serviceType === 'booth' && (language === 'ar' ? 'بوثات ومعارض' : 'Exhibition')}
                   </span>
                 </div>
+                {formData.city && (
+                  <div className="flex justify-between text-xs font-light">
+                    <span className="text-zinc-500">{language === 'ar' ? 'المدينة' : 'City'}:</span>
+                    <span className="font-semibold text-zinc-900">{formData.city}</span>
+                  </div>
+                )}
+                {formData.neighborhood && (
+                  <div className="flex justify-between text-xs font-light">
+                    <span className="text-zinc-500">{language === 'ar' ? 'الحي' : 'Neighborhood'}:</span>
+                    <span className="font-semibold text-zinc-900">{formData.neighborhood}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-xs font-light">
                   <span className="text-zinc-500">{language === 'ar' ? 'المساحة المدخلة' : 'Floor Space'}:</span>
                   <span className="font-semibold text-zinc-900">{formData.areaSize} {language === 'ar' ? 'متر مربع' : 'sqm'}</span>
