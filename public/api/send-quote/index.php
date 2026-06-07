@@ -313,56 +313,89 @@ if (!empty($smtpHost) && !empty($smtpUser) && !empty($smtpPass)) {
         $secure = ($smtpPort === 465);
         $socketHost = $secure ? "ssl://" . $smtpHost : $smtpHost;
         
-        $socket = @fsockopen($socketHost, $smtpPort, $errno, $errstr, 15);
+        // Define a fast connection timeout to avoid any 504 gateway timeout
+        $socket = @fsockopen($socketHost, $smtpPort, $errno, $errstr, 5);
         
         if (!$socket) {
-            throw new Exception("Socket connection to $smtpHost:$smtpPort failed: $errstr ($errno)");
+            throw new Exception("Socket connection to $socketHost:$smtpPort failed: $errstr ($errno)");
         }
         
-        function read_smtp($socket, $expected) {
+        // Set a socket read/write timeout (5 seconds)
+        stream_set_timeout($socket, 5);
+        
+        // Use PHP closure to avoid "cannot redeclare function" errors
+        $read_smtp = function($socket, $expected) {
             $response = "";
-            while (substr($response, 3, 1) !== ' ') {
+            while (true) {
                 $line = fgets($socket, 512);
-                if ($line === false) break;
+                if ($line === false) {
+                    $info = stream_get_meta_data($socket);
+                    if ($info['timed_out']) {
+                        throw new Exception("SMTP Timeout: Connection timed out waiting for response ($expected). Response so far: " . trim($response));
+                    }
+                    break;
+                }
                 $response .= $line;
+                // If a line is formatted correctly, its 4th character (index 3) is a space for the final line
+                if (strlen($line) >= 4 && $line[3] === ' ') {
+                    break;
+                }
             }
             $code = substr($response, 0, 3);
             if ($code !== $expected) {
                 throw new Exception("SMTP Expected code $expected, received: " . trim($response));
             }
             return $response;
-        }
+        };
 
-        read_smtp($socket, "220");
+        $read_smtp($socket, "220");
         
         fwrite($socket, "EHLO " . ($_SERVER['SERVER_NAME'] ?? "localhost") . "\r\n");
-        read_smtp($socket, "250");
+        $read_smtp($socket, "250");
 
         if ($smtpPort === 587) {
             fwrite($socket, "STARTTLS\r\n");
-            read_smtp($socket, "220");
-            stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT);
+            $read_smtp($socket, "220");
+            
+            // Modern TLS protocol flags required for Google Workspace / Gmail
+            $crypto_method = STREAM_CRYPTO_METHOD_TLS_CLIENT;
+            if (defined('STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT')) {
+                $crypto_method |= STREAM_CRYPTO_METHOD_TLSv1_1_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT;
+            }
+            if (defined('STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT')) {
+                $crypto_method |= STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT;
+            }
+            
+            $crypto_success = @stream_socket_enable_crypto($socket, true, $crypto_method);
+            if (!$crypto_success) {
+                // Try any client fallback
+                $crypto_success = @stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_ANY_CLIENT);
+            }
+            if (!$crypto_success) {
+                throw new Exception("STARTTLS Handshake (Encryption) failed to initiate over socket.");
+            }
+            
             fwrite($socket, "EHLO " . ($_SERVER['SERVER_NAME'] ?? "localhost") . "\r\n");
-            read_smtp($socket, "250");
+            $read_smtp($socket, "250");
         }
 
         fwrite($socket, "AUTH LOGIN\r\n");
-        read_smtp($socket, "334");
+        $read_smtp($socket, "334");
 
         fwrite($socket, base64_encode($smtpUser) . "\r\n");
-        read_smtp($socket, "334");
+        $read_smtp($socket, "334");
 
         fwrite($socket, base64_encode($smtpPass) . "\r\n");
-        read_smtp($socket, "235");
+        $read_smtp($socket, "235");
 
         fwrite($socket, "MAIL FROM:<$smtpUser>\r\n");
-        read_smtp($socket, "250");
+        $read_smtp($socket, "250");
 
-        fwrite($socket, "RCPT TO:.<$toEmail>\r\n");
-        read_smtp($socket, "250");
+        fwrite($socket, "RCPT TO:<$toEmail>\r\n");
+        $read_smtp($socket, "250");
 
         fwrite($socket, "DATA\r\n");
-        read_smtp($socket, "354");
+        $read_smtp($socket, "354");
 
         // Format MIME Headers correctly
         $boundary = md5(uniqid(time()));
@@ -379,7 +412,7 @@ if (!empty($smtpHost) && !empty($smtpUser) && !empty($smtpPass)) {
 
         $message = implode("\r\n", $headers) . "\r\n\r\n" . $emailHtml . "\r\n.\r\n";
         fwrite($socket, $message);
-        read_smtp($socket, "250");
+        $read_smtp($socket, "250");
 
         fwrite($socket, "QUIT\r\n");
         fclose($socket);
