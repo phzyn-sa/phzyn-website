@@ -169,6 +169,7 @@ export function ProjectsView({
                     mute={true}
                     loop={true}
                     controls={false}
+                    coverImage={proj.mainImage}
                   />
                 </div>
               ) : (
@@ -180,6 +181,8 @@ export function ProjectsView({
                 />
               )}
 
+              {/* Absolute overlay elements: gradient + touch block */}
+              <div className="absolute inset-0 bg-[#000000]/25 z-25 cursor-pointer" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent opacity-80 z-20 pointer-events-none" />
 
               <div className="absolute bottom-4 right-4 bg-[#10798e] text-white text-[10px] font-black px-3 py-1.5 rounded-lg border border-white/10 shadow-md z-30">
@@ -243,20 +246,21 @@ export function ProjectsView({
                 <X className="h-5 w-5" />
               </button>
 
-              <div className="grid grid-cols-1 md:grid-cols-2">
+               <div className="grid grid-cols-1 md:grid-cols-2">
                 
                 {/* Visual Thumbnail */}
-                <div className="relative h-96 md:h-full min-h-[400px] md:min-h-[500px] bg-zinc-950 flex items-center justify-center overflow-hidden p-4">
+                <div className="relative w-full aspect-[9/16] md:aspect-auto md:h-full md:min-h-[500px] bg-zinc-950 flex items-center justify-center overflow-hidden p-0 md:p-6 border-b border-zinc-150 md:border-b-0 md:border-r border-zinc-200">
                   {selectedProject.youtubeId ? (
                     <YoutubePlayer
                       youtubeId={selectedProject.youtubeId}
                       title={selectedProject.titleAr}
-                      className="h-full max-w-full rounded-2xl shadow-2xl z-10"
+                      className="w-full h-full rounded-none md:rounded-2xl shadow-none md:shadow-2xl z-10"
                       style={{ aspectRatio: '9/16' }}
                       autoplay={true}
                       mute={true}
                       loop={true}
-                      controls={true}
+                      controls={false}
+                      coverImage="https://www.krea.ai/api/img?f=webp&i=https%3A%2F%2Fapp-uploads.krea.ai%2Fpublic%2F5b7ad27d-3d78-4ebb-aa63-68a1426dabca.png&s=1024"
                     />
                   ) : (
                     <>
@@ -271,8 +275,79 @@ export function ProjectsView({
                   )}
                 </div>
 
-                {/* Structured Text details */}
-                <div className="p-6 md:p-8 flex flex-col justify-between max-h-[85vh] overflow-y-auto">
+                {/* Mobile-Only Compact Info Layout */}
+                <div className="md:hidden flex flex-col gap-5 p-5 bg-white">
+                  {/* Compact Grid of the 4 requested indicators */}
+                  <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-zinc-200">
+                    
+                    {/* Client */}
+                    <div className="flex items-start gap-2">
+                      <User className="h-4 w-4 text-[#10798e] mt-0.5 whitespace-nowrap shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase">
+                          {language === 'ar' ? 'العميل' : 'Client'}
+                        </span>
+                        <span className="text-xs font-semibold text-zinc-800 truncate">
+                          {language === 'ar' ? selectedProject.clientAr : selectedProject.clientEn}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Location */}
+                    <div className="flex items-start gap-2">
+                      <MapPin className="h-4 w-4 text-[#10798e] mt-0.5 whitespace-nowrap shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase">
+                          {language === 'ar' ? 'الموقع' : 'Location'}
+                        </span>
+                        <span className="text-xs font-semibold text-zinc-800 truncate">
+                          {language === 'ar' ? selectedProject.locationAr : selectedProject.locationEn}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Area */}
+                    <div className="flex items-start gap-2">
+                      <Maximize2 className="h-4 w-4 text-zinc-400 mt-0.5 whitespace-nowrap shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase">
+                          {language === 'ar' ? 'المساحة' : 'Area'}
+                        </span>
+                        <span className="text-xs font-semibold text-zinc-800 truncate">
+                          {selectedProject.area}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Project Category */}
+                    <div className="flex items-start gap-2">
+                      <Layers className="h-4 w-4 text-[#10798e] mt-0.5 whitespace-nowrap shrink-0" />
+                      <div className="flex flex-col overflow-hidden">
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase">
+                          {language === 'ar' ? 'نوع المشروع' : 'Project Type'}
+                        </span>
+                        <span className="text-xs font-semibold text-zinc-800 truncate">
+                          {selectedProject.category === 'commercial' && (language === 'ar' ? 'محلات تجارية' : 'Retail')}
+                          {selectedProject.category === 'office' && (language === 'ar' ? 'مكاتب ومقرات عمل' : 'Corporate')}
+                          {selectedProject.category === 'booth' && (language === 'ar' ? 'بوثات ومعارض' : 'Exhibition')}
+                        </span>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* CTA Button */}
+                  <button
+                    onClick={() => handleRequestSimilar(selectedProject.category)}
+                    className="w-full flex items-center justify-center gap-2 py-3.5 rounded-full text-xs font-black bg-[#10798e] hover:bg-[#0c5c6d] text-white shadow-md shadow-[#10798e]/20 active:scale-95 transition-all duration-300"
+                  >
+                    <span>{language === 'ar' ? 'اطلب تنفيذ مشروع مشابه' : 'Request Similar Project'}</span>
+                    {language === 'ar' ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
+                  </button>
+                </div>
+
+                {/* Desktop-Only Structured Text details */}
+                <div className="hidden md:flex p-6 md:p-8 flex-col justify-between max-h-[85vh] overflow-y-auto">
                   <div className="flex flex-col gap-6">
                     {/* Category Header */}
                     <div className="flex flex-wrap items-center gap-1.5">
@@ -295,32 +370,32 @@ export function ProjectsView({
                     {/* Metadata Grid (Client, Location, Type, Size) */}
                     <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-zinc-200">
                       <div className="flex items-start gap-2">
-                        <User className="h-4 w-4 text-[#10798e] mt-0.5" />
-                        <div className="flex flex-col">
+                        <User className="h-4 w-4 text-[#10798e] mt-0.5 whitespace-nowrap shrink-0" />
+                        <div className="flex flex-col overflow-hidden">
                           <span className="text-[10px] text-zinc-500 font-bold uppercase">{t.projectClient}</span>
-                          <span className="text-xs font-semibold text-zinc-800">
+                          <span className="text-xs font-semibold text-zinc-800 truncate">
                             {language === 'ar' ? selectedProject.clientAr : selectedProject.clientEn}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <MapPin className="h-4 w-4 text-[#10798e] mt-0.5" />
-                        <div className="flex flex-col">
+                        <MapPin className="h-4 w-4 text-[#10798e] mt-0.5 whitespace-nowrap shrink-0" />
+                        <div className="flex flex-col overflow-hidden">
                           <span className="text-[10px] text-zinc-500 font-bold uppercase">{t.projectLocation}</span>
-                          <span className="text-xs font-semibold text-zinc-800">
+                          <span className="text-xs font-semibold text-zinc-800 truncate">
                             {language === 'ar' ? selectedProject.locationAr : selectedProject.locationEn}
                           </span>
                         </div>
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <Layers className="h-4 w-4 text-[#10798e] mt-0.5" />
-                        <div className="flex flex-col">
+                        <Layers className="h-4 w-4 text-[#10798e] mt-0.5 whitespace-nowrap shrink-0" />
+                        <div className="flex flex-col overflow-hidden">
                           <span className="text-[10px] text-zinc-500 font-bold uppercase">
                             {language === 'ar' ? 'نوع المشروع' : 'Project Type'}
                           </span>
-                          <span className="text-xs font-semibold text-zinc-800">
+                          <span className="text-xs font-semibold text-zinc-800 truncate">
                             {selectedProject.category === 'commercial' && (language === 'ar' ? 'محلات تجارية' : 'Retail')}
                             {selectedProject.category === 'office' && (language === 'ar' ? 'مكاتب ومقرات عمل' : 'Corporate')}
                             {selectedProject.category === 'booth' && (language === 'ar' ? 'بوثات ومعارض' : 'Exhibition')}
@@ -329,10 +404,10 @@ export function ProjectsView({
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <Maximize2 className="h-4 w-4 text-zinc-400 mt-0.5" />
-                        <div className="flex flex-col">
+                        <Maximize2 className="h-4 w-4 text-zinc-400 mt-0.5 whitespace-nowrap shrink-0" />
+                        <div className="flex flex-col overflow-hidden">
                           <span className="text-[10px] text-zinc-500 font-bold uppercase">{t.projectArea}</span>
-                          <span className="text-xs font-semibold text-zinc-800">
+                          <span className="text-xs font-semibold text-zinc-800 truncate">
                             {selectedProject.area}
                           </span>
                         </div>

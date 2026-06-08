@@ -57,6 +57,7 @@ export interface YoutubePlayerProps {
   mute?: boolean;
   loop?: boolean;
   controls?: boolean;
+  coverImage?: string;
 }
 
 export const YoutubePlayer: React.FC<YoutubePlayerProps> = ({
@@ -67,14 +68,17 @@ export const YoutubePlayer: React.FC<YoutubePlayerProps> = ({
   autoplay = true,
   mute = true,
   loop = true,
-  controls = false
+  controls = false,
+  coverImage
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<any>(null);
   const [isReady, setIsReady] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   useEffect(() => {
     let active = true;
+    setIsPlaying(false);
 
     loadYoutubeIframeApi(() => {
       if (!active || !containerRef.current) return;
@@ -139,6 +143,10 @@ export const YoutubePlayer: React.FC<YoutubePlayerProps> = ({
           },
           onStateChange: (event: any) => {
             if (!active) return;
+            // Mark as playing to trigger fade-out of static screen
+            if (event.data === YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+            }
             // Force / re-request high definition upon transition to buffer/play to counter browser adaptive bandwidth downgrades
             if (event.data === YT.PlayerState.PLAYING || event.data === YT.PlayerState.BUFFERING) {
               try {
@@ -178,11 +186,22 @@ export const YoutubePlayer: React.FC<YoutubePlayerProps> = ({
   }, [youtubeId, autoplay, mute, loop, controls]);
 
   return (
-    <div 
-      ref={containerRef}
-      className={`relative overflow-hidden bg-black [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:object-cover ${className}`}
-      style={style}
-      title={title}
-    />
+    <div className={`relative overflow-hidden bg-black ${className} ${!controls ? 'pointer-events-none' : ''}`} style={style}>
+      <div 
+        ref={containerRef}
+        className="w-full h-full [&>iframe]:w-full [&>iframe]:h-full [&>iframe]:object-cover"
+        title={title}
+      />
+      {coverImage && (
+        <img
+          src={coverImage}
+          alt={title}
+          referrerPolicy="no-referrer"
+          className={`absolute inset-0 w-full h-full object-cover z-20 transition-opacity duration-700 pointer-events-none ${
+            isPlaying ? 'opacity-0' : 'opacity-100'
+          }`}
+        />
+      )}
+    </div>
   );
 };

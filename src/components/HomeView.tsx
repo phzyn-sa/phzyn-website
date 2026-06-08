@@ -513,6 +513,7 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
                       mute={true}
                       loop={true}
                       controls={false}
+                      coverImage={proj.mainImage}
                     />
                   </div>
                 ) : (
@@ -524,6 +525,8 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
                   />
                 )}
 
+                {/* Absolute overlay elements: gradient + touch block */}
+                <div className="absolute inset-0 bg-[#000000]/25 z-25 cursor-pointer" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-transparent to-transparent opacity-80 z-20 pointer-events-none" />
                 
                 {/* Category tag */}
