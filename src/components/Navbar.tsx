@@ -7,7 +7,7 @@ import React from 'react';
 import { motion } from 'motion/react';
 import { Compass, Briefcase, FileText } from 'lucide-react';
 import { Logo } from './Logo';
-import { Page, Language } from '../types';
+import { Page, Language, Project } from '../types';
 import { Translations } from '../data';
 
 interface NavbarProps {
@@ -15,9 +15,10 @@ interface NavbarProps {
   setActivePage: (page: Page) => void;
   language: Language;
   setLanguage: (lang: Language) => void;
+  selectedProject?: Project | null;
 }
 
-export function Navbar({ activePage, setActivePage, language }: NavbarProps) {
+export function Navbar({ activePage, setActivePage, language, selectedProject }: NavbarProps) {
   const t = Translations[language];
 
   // Exactly 2 mid-links (Home & Projects), the Logo is on one side, and the Quote Button is on the other.
@@ -77,7 +78,24 @@ export function Navbar({ activePage, setActivePage, language }: NavbarProps) {
           {/* 4. CTA Quote Button - Direct and clearly visible inside the bar on all devices */}
           <div className="flex items-center shrink-0">
             <button
-              onClick={() => setActivePage('quote')}
+              onClick={() => {
+                const w = window as any;
+                w.dataLayer = w.dataLayer || [];
+                const eventData: any = {
+                  event: 'quote_cta_click',
+                  button_text: language === 'ar' ? 'احصل على عرض سعر' : 'Get a Quote',
+                  page_path: window.location.pathname,
+                  section: 'header_or_project_cta'
+                };
+                if (activePage === 'projects' && selectedProject) {
+                  eventData.project_title = language === 'ar' ? selectedProject.titleAr : selectedProject.titleEn;
+                  eventData.project_type = selectedProject.category;
+                  eventData.location = language === 'ar' ? selectedProject.locationAr : selectedProject.locationEn;
+                  eventData.area_size = selectedProject.area;
+                }
+                w.dataLayer.push(eventData);
+                setActivePage('quote');
+              }}
               className={`group relative overflow-hidden px-1.5 xs:px-2.5 sm:px-5 py-2 rounded-full text-[10px] xs:text-xs font-bold transition-all duration-300 active:scale-95 flex items-center gap-0.5 xs:gap-1 sm:gap-1.5 ${
                 activePage === 'quote'
                   ? 'bg-[#10798e]/20 text-[#10798e] border border-[#10798e]/40 shadow-lg'

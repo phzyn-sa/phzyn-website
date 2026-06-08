@@ -62,6 +62,22 @@ export function ProjectsView({
     else if (category === 'office') mapped = 'office';
     else if (category === 'booth') mapped = 'booth';
 
+    // Dispatch quote_cta_click GTM event for project details
+    if (selectedProject) {
+      const w = window as any;
+      w.dataLayer = w.dataLayer || [];
+      w.dataLayer.push({
+        event: 'quote_cta_click',
+        button_text: language === 'ar' ? 'اطلب تنفيذ مشروع مشابه' : 'Request Similar Project',
+        page_path: window.location.pathname,
+        section: 'header_or_project_cta',
+        project_title: language === 'ar' ? selectedProject.titleAr : selectedProject.titleEn,
+        project_type: selectedProject.category,
+        location: language === 'ar' ? selectedProject.locationAr : selectedProject.locationEn,
+        area_size: selectedProject.area
+      });
+    }
+
     setPreselectedService(mapped);
     setSelectedProject(null);
     setActivePage('quote');

@@ -98,46 +98,23 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
         page_path: window.location.pathname
       });
 
-      // 2. Rich submit event with SHA-256 hashed identifiers and metadata
-      const fireRichEvent = async () => {
-        try {
-          const hashSHA256 = async (input: string, isEmail: boolean = false) => {
-            let normalized = (input || '').trim();
-            if (isEmail) {
-              normalized = normalized.toLowerCase();
-            }
-            const encoder = new TextEncoder();
-            const data = encoder.encode(normalized);
-            const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-          };
+      // 2. Rich submit event with raw identifiers and metadata
+      const locationString = [formData.city, formData.neighborhood].filter(Boolean).join(', ') || 'N/A';
 
-          const emailHash = await hashSHA256(formData.email, true);
-          const phoneHash = await hashSHA256(formData.phone, false);
-
-          const locationString = [formData.city, formData.neighborhood].filter(Boolean).join(', ') || 'N/A';
-
-          w.dataLayer.push({
-            event: 'quote_form_submit',
-            form_name: 'quote_request',
-            full_name: formData.fullName,
-            company_name: formData.companyName || '',
-            email_sha256: emailHash,
-            phone_sha256: phoneHash,
-            project_type: formData.serviceType,
-            location: locationString,
-            area_size: formData.areaSize,
-            budget: formData.budget,
-            timeline: formData.timeline,
-            page_path: window.location.pathname
-          });
-        } catch (e) {
-          console.error('Failed to dispatch quote_form_submit event:', e);
-        }
-      };
-
-      fireRichEvent();
+      w.dataLayer.push({
+        event: 'quote_form_submit',
+        form_name: 'quote_request',
+        page_path: window.location.pathname,
+        full_name: formData.fullName,
+        company_name: formData.companyName || '',
+        email: formData.email,
+        phone: formData.phone,
+        project_type: formData.serviceType,
+        location: locationString,
+        area_size: formData.areaSize,
+        budget: formData.budget,
+        timeline: formData.timeline
+      });
     }
   }, [isSubmitted, smtpSuccess, formData]);
 

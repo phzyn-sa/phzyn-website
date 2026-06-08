@@ -42,6 +42,7 @@ export default function App() {
         setActivePage={setActivePage} 
         language={language} 
         setLanguage={setLanguage} 
+        selectedProject={selectedProject}
       />
 
       {/* 2. Page View Containers backed by beautiful transitions */}

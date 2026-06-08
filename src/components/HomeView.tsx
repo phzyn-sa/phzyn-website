@@ -298,6 +298,14 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
             <div className="flex">
               <button
                 onClick={() => {
+                  const w = window as any;
+                  w.dataLayer = w.dataLayer || [];
+                  w.dataLayer.push({
+                    event: 'quote_cta_click',
+                    button_text: language === 'ar' ? 'احصل على عرض سعر' : 'Get a Quote',
+                    page_path: window.location.pathname,
+                    section: 'header_or_project_cta'
+                  });
                   setActivePage('quote');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
