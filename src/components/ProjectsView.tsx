@@ -77,7 +77,7 @@ export function ProjectsView({
           {language === 'ar' ? 'سجل الإبداع المعماري' : 'Architectural Portfolio'}
         </div>
         <h1 className="text-3xl md:text-5xl font-extrabold tracking-tight text-zinc-900 font-sans">
-          {language === 'ar' ? 'صروحنا ومشاريعنا المنجزة' : 'Masterpieces & Delivered Contracts'}
+          {language === 'ar' ? 'مشاريع منجزة على ارض الواقع' : 'Masterpieces & Delivered Contracts'}
         </h1>
         <p className="text-zinc-650 text-sm sm:text-base max-w-2xl font-light">
           {language === 'ar' 
