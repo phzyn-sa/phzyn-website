@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, MapPin, Maximize2, Calendar, User, Check, X, ArrowLeft, ArrowRight, CornerDownLeft, Play, Layers } from 'lucide-react';
 import { Page, Language, Project } from '../types';
 import { ProjectsData, Translations } from '../data';
+import { YoutubePlayer } from './YoutubePlayer';
 
 interface ProjectsViewProps {
   language: Language;
@@ -159,13 +160,15 @@ export function ProjectsView({
               {/* Autoplay muted video directly without fake image placeholder */}
               {proj.youtubeId ? (
                 <div className="absolute inset-0 w-full h-full pointer-events-none z-0 overflow-hidden bg-black">
-                  <iframe
-                    src={`https://www.youtube.com/embed/${proj.youtubeId}?autoplay=1&mute=1&loop=1&playlist=${proj.youtubeId}&controls=0&showinfo=0&rel=0&playsinline=1&iv_load_policy=3&modestbranding=1&enablejsapi=1`}
-                    className="w-full h-full object-cover opacity-95 transition-opacity"
-                    style={{ transform: 'scale(2.38)', transformOrigin: 'center' }}
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    frameBorder="0"
+                  <YoutubePlayer
+                    youtubeId={proj.youtubeId}
                     title={proj.titleAr}
+                    className="w-full h-full opacity-95 transition-opacity"
+                    style={{ transform: 'scale(2.38)', transformOrigin: 'center' }}
+                    autoplay={true}
+                    mute={true}
+                    loop={true}
+                    controls={false}
                   />
                 </div>
               ) : (
@@ -245,14 +248,15 @@ export function ProjectsView({
                 {/* Visual Thumbnail */}
                 <div className="relative h-96 md:h-full min-h-[400px] md:min-h-[500px] bg-zinc-950 flex items-center justify-center overflow-hidden p-4">
                   {selectedProject.youtubeId ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${selectedProject.youtubeId}?autoplay=1&mute=1&controls=1&rel=0&playsinline=1&playlist=${selectedProject.youtubeId}&loop=1`}
+                    <YoutubePlayer
+                      youtubeId={selectedProject.youtubeId}
+                      title={selectedProject.titleAr}
                       className="h-full max-w-full rounded-2xl shadow-2xl z-10"
                       style={{ aspectRatio: '9/16' }}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      frameBorder="0"
-                      title={selectedProject.titleAr}
+                      autoplay={true}
+                      mute={true}
+                      loop={true}
+                      controls={true}
                     />
                   ) : (
                     <>
