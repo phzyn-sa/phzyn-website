@@ -82,6 +82,65 @@ export function QuoteView({ language, preselectedService, setPreselectedService 
     }
   }, [formData.serviceType]);
 
+  const hasFiredGTM = React.useRef(false);
+
+  // Google Tag Manager dataLayer event dispatcher after successful API form response
+  useEffect(() => {
+    if (isSubmitted && smtpSuccess === true && !hasFiredGTM.current) {
+      hasFiredGTM.current = true;
+      const w = window as any;
+      w.dataLayer = w.dataLayer || [];
+      
+      // 1. Existing success event
+      w.dataLayer.push({
+        event: 'quote_form_success',
+        form_name: 'quote_request',
+        page_path: window.location.pathname
+      });
+
+      // 2. Rich submit event with SHA-256 hashed identifiers and metadata
+      const fireRichEvent = async () => {
+        try {
+          const hashSHA256 = async (input: string, isEmail: boolean = false) => {
+            let normalized = (input || '').trim();
+            if (isEmail) {
+              normalized = normalized.toLowerCase();
+            }
+            const encoder = new TextEncoder();
+            const data = encoder.encode(normalized);
+            const hashBuffer = await window.crypto.subtle.digest('SHA-256', data);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+          };
+
+          const emailHash = await hashSHA256(formData.email, true);
+          const phoneHash = await hashSHA256(formData.phone, false);
+
+          const locationString = [formData.city, formData.neighborhood].filter(Boolean).join(', ') || 'N/A';
+
+          w.dataLayer.push({
+            event: 'quote_form_submit',
+            form_name: 'quote_request',
+            full_name: formData.fullName,
+            company_name: formData.companyName || '',
+            email_sha256: emailHash,
+            phone_sha256: phoneHash,
+            project_type: formData.serviceType,
+            location: locationString,
+            area_size: formData.areaSize,
+            budget: formData.budget,
+            timeline: formData.timeline,
+            page_path: window.location.pathname
+          });
+        } catch (e) {
+          console.error('Failed to dispatch quote_form_submit event:', e);
+        }
+      };
+
+      fireRichEvent();
+    }
+  }, [isSubmitted, smtpSuccess, formData]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.email || !formData.phone) {
