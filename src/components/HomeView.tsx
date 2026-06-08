@@ -513,7 +513,6 @@ export function HomeView({ setActivePage, language, setSelectedProject }: HomeVi
                       mute={true}
                       loop={true}
                       controls={false}
-                      coverImage={proj.mainImage}
                     />
                   </div>
                 ) : (

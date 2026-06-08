@@ -169,7 +169,6 @@ export function ProjectsView({
                     mute={true}
                     loop={true}
                     controls={false}
-                    coverImage={proj.mainImage}
                   />
                 </div>
               ) : (
