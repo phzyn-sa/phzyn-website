@@ -13,12 +13,53 @@ import { QuoteView } from './components/QuoteView';
 import { Footer } from './components/Footer';
 
 export default function App() {
-  const [activePage, setActivePage] = useState<Page>('home');
+  const [activePage, setActivePage] = useState<Page>(() => {
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/quote' || path === '/quote/') return 'quote';
+      if (path === '/projects' || path === '/projects/') return 'projects';
+    }
+    return 'home';
+  });
   const [language, setLanguage] = useState<Language>('ar');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   
   // Connects selected project CTAs directly as preselected forms on the Quote page
   const [preselectedService, setPreselectedService] = useState<'commercial' | 'office' | 'booth' | 'other' | null>(null);
+
+  // Synchronise activePage state changes to the browser's URL without a reload
+  useEffect(() => {
+    const currentPath = window.location.pathname.toLowerCase();
+    let targetPath = '/';
+    if (activePage === 'quote') {
+      targetPath = '/quote';
+    } else if (activePage === 'projects') {
+      targetPath = '/projects';
+    }
+
+    if (currentPath !== targetPath && currentPath !== targetPath + '/') {
+      window.history.pushState(null, '', targetPath);
+    }
+    // Elegant viewport scroll to top on routing changes
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [activePage]);
+
+  // Listen to popstate event (browser back/forward button clicks)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname.toLowerCase();
+      if (path === '/quote' || path === '/quote/') {
+        setActivePage('quote');
+      } else if (path === '/projects' || path === '/projects/') {
+        setActivePage('projects');
+      } else {
+        setActivePage('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Synchronise directionality on mount
   useEffect(() => {

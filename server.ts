@@ -301,6 +301,11 @@ async function startServer() {
     }
   });
 
+  // 301 Redirection rules from any old/alternate quote page URLs to the new clean '/quote' route
+  app.get(['/quote-request', '/request-quote', '/quote.html', '/quote-request.html', '/quotes', '/pricing'], (req, res) => {
+    res.redirect(301, '/quote');
+  });
+
   // Serve static files and mount Vite middleware in development vs production
   if (process.env.NODE_ENV !== 'production') {
     const { createServer: createViteServer } = await import('vite');

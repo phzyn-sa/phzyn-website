@@ -2,11 +2,15 @@
   RewriteEngine On
   RewriteBase /
   
-  # 1. Route POST /api/send-quote to the PHP SMTP Mailer endpoint
+  # 1. 301 Redirect old or alternate quote page URLs to /quote (Only for GET requests)
+  RewriteCond %{REQUEST_METHOD} GET
+  RewriteRule ^(quote-request|request-quote|quote\.html|quote-request\.html|quotes|pricing)$ /quote [R=301,L]
+
+  # 2. Route POST /api/send-quote to the PHP SMTP Mailer endpoint
   RewriteRule ^api/send-quote$ api/send-quote/index.php [L,QSA]
   RewriteRule ^api/send-quote/$ api/send-quote/index.php [L,QSA]
 
-  # 2. Redirect/Fallback for SPA inside Vite React (Allows page refreshes on subroutes)
+  # 3. Redirect/Fallback for SPA inside Vite React (Allows page refreshes on subroutes)
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
